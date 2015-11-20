@@ -1,0 +1,117 @@
+* --- fichier test pour Ray-Tracer ---
+
+* --- GENERAL ------------------------
+        * --- back-ground color: R G B ---
+        * --- pos camera ---
+        background: 0 0 150
+        origin: 350.0 20.0 350.0
+
+* --- lumiere ---
+Lumiere: light_1
+        position: 100.0 400.0 360.0
+        intens:   0.5
+	
+Lumiere: light_2
+        position: 30.0 0.0 20.0
+        intens:   0.6
+	
+* --- un plan au sol (y = -45) ---
+* --- Ax + By + Cz -D = 0 ---
+Plane: plane_1
+        v_linear: 0.0 1.0 0.0 
+        v_const:  45.0
+        color:   10 255 11
+        ambient: 0.3
+        diffus:  0.7
+
+instance: plane_1
+
+* --- trois plans miroirs ---
+* --- Ax + By + Cz -D = 0 ---
+
+* Plane: miroir_1
+*        v_linear: 0.0 1.0 0.0 
+*        v_const:  0.0
+*        color:   10 255 11
+*        ambient: 0.01
+*        diffus:  0.0
+*	reflect: 0.99
+*	rotate: 90 0 0
+*	translate: 0 0 -400
+*	rotate: 0 180 0
+
+Plane: miroir_2
+        v_linear: 0.0 1.0 0.0 
+        v_const:  0.0
+        color:   10 255 11
+        ambient: 0.01
+        diffus:  0.0
+	reflect: 0.99
+	rotate: 90 0 0
+	translate: 0 0 -400
+	rotate: 0 60 0
+Plane: miroir_3
+        v_linear: 0.0 1.0 0.0 
+        v_const:  0.0
+        color:   10 255 11
+        ambient: 0.01
+        diffus:  0.0
+	reflect: 0.99
+	rotate: 90 0 0
+	translate: 0 0 -400
+	rotate: 0 300 0
+
+instance: miroir_2 miroir_3
+
+* --- une tube incline: rayon = 1*20, pos = 0, 0, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: tube_1
+	v_quad:      1.0 0.0 1.0
+	v_linear:    0.0 0.0 0.0 
+	v_const:   -1.0
+	scale:  20.0 20.0 20.0
+	rotate: 45.0 0.0 0.0
+	translate: 0.0 00.0 -100.0
+	rotate: 0.0 30.0 0.0
+	color:  250 20 20
+	ambient:  0.2
+	diffus:   0.8
+
+* --- une tube incline: rayon = 1*40, pos = 0, 0, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: tube_2
+	v_quad:      1.0 0.0 1.0
+	v_linear:    0.0 0.0 0.0 
+	v_const:   -1.0
+	scale:  20.0 20.0 20.0
+	rotate: 45.0 0.0 0.0
+	translate: 0.0 00.0 -100.0
+	rotate: 0.0 150.0 0.0
+	color:  250 250 20
+	ambient:  0.2
+	diffus:   0.8
+*	reflect:  0.6
+
+* --- une tube incline: rayon = 1*40, pos = 0, 0, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: tube_3
+	v_quad:      1.0 0.0 1.0
+	v_linear:    0.0 0.0 0.0 
+	v_const:   -1.0
+	scale:  20.0 20.0 20.0
+	rotate: 45.0 0.0 0.0
+	translate: 0.0 00.0 -100.0
+	rotate: 0.0 270.0 0.0
+	color:  20 250 250
+	ambient:  0.2
+	diffus:   0.8
+*	refract:  0.6 1.2
+
+instance: tube_1 tube_2 tube_3
+

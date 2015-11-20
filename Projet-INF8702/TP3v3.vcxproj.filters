@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{68c72485-2beb-48ce-94b4-5d0729dfec46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{2eaccc0d-eca5-4f80-9fd5-f18f3b0d921f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene\Surface">
+      <UniqueIdentifier>{1392bfb0-b989-43dc-a588-ac950fbe094c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene\Light">
+      <UniqueIdentifier>{863af965-fdfe-4420-9cba-6f8ae75c8534}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{0069d94d-65f6-41ee-85dd-bb42ae78735a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{03c3584f-a05e-4291-8ef0-8c462ac8509f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene">
+      <UniqueIdentifier>{f526d542-d8e1-4da4-a70e-1bc903f9ef01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene\Surface">
+      <UniqueIdentifier>{1893878c-364e-45fd-9c36-81b1fb347eae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene\Light">
+      <UniqueIdentifier>{caa2bc20-17c3-4df4-ac18-55bab9df3741}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{ab505501-5f10-4876-86de-97cd7331df4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Cst.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Var.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrice4.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vecteur3.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Intersection.cpp">
+      <Filter>Source Files\Scene\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="ISurface.cpp">
+      <Filter>Source Files\Scene\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="Plan.cpp">
+      <Filter>Source Files\Scene\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="Quadrique.cpp">
+      <Filter>Source Files\Scene\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Source Files\Scene\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="Lumiere.cpp">
+      <Filter>Source Files\Scene\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Couleur.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Rayon.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Cst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Var.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrice4.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vecteur3.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Intersection.h">
+      <Filter>Header Files\Scene\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="ISurface.h">
+      <Filter>Header Files\Scene\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="Plan.h">
+      <Filter>Header Files\Scene\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="Quadrique.h">
+      <Filter>Header Files\Scene\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Header Files\Scene\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="Lumiere.h">
+      <Filter>Header Files\Scene\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Couleur.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Rayon.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scenes\scene7.dat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Scenes\scene8.dat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Scenes\scene9.dat">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
