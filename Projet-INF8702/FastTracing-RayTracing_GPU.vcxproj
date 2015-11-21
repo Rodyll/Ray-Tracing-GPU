@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>TP2v3</ProjectName>
+    <ProjectName>FastTracing-RayTracing_GPU</ProjectName>
     <ProjectGuid>{F5F345A6-4BCA-4BD8-ACD5-525580DDD675}</ProjectGuid>
     <RootNamespace>RayTracerCPU</RootNamespace>
     <Keyword>Win32Proj</Keyword>
