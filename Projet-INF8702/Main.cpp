@@ -27,6 +27,8 @@
 #endif
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glew.h>
@@ -34,6 +36,7 @@
 
 #include "Cst.h"
 #include "Var.h"
+#include "NuanceurCalculProg.h"
 
 using namespace std;
 
@@ -43,6 +46,7 @@ void Redimensionner      ( int w, int h );
 void RafraichirProjection( void );
 void Liberer             ( void );
 void Dessiner            ( void );
+string getSourceCode(const char *filename);
 
 int main( int argc, char *argv[] )
 {
@@ -91,7 +95,8 @@ int main( int argc, char *argv[] )
 		cout << "[ETAT]: Traitement du fichier de donnees de la scene..." << endl;
 		CVar::g_GestionnaireDeScene->TraiterFichierDeScene( argv[ 1 ] );
 
-		cout << "[ETAT]: Initialisation de glut..." << endl;
+
+		cout << "[ETAT]: Initialisation de glut...";
 		// Initialiser GLUT
 		glutInit( &argc, argv );
 		// Définir le mode d'affichage de GLUT
@@ -99,7 +104,7 @@ int main( int argc, char *argv[] )
 		// Définir les dimensions de la fenêtre GLUT
 		glutInitWindowSize( CVar::g_LargeurFenetre, CVar::g_HauteurFenetre );
 		// Créer la fenêtre GLUT et enregistrer l'ID
-		CVar::g_FenetreID = glutCreateWindow( "INF8702 - Lancer de rayon sur CPU" );
+		CVar::g_FenetreID = glutCreateWindow( "INF8702 - Lancer de rayon sur CPU/GPU" );
 		// Positionner la fenêtre GLUT
 		glutPositionWindow( CCst::g_FenetreX, CCst::g_FenetreY );
 
@@ -107,6 +112,8 @@ int main( int argc, char *argv[] )
 		glutDisplayFunc( Dessiner );
 		// Dire à GLUT d'utiliser la méthode "Redimensionner" comme principale fonction de redimensionnement
 		glutReshapeFunc( Redimensionner );
+		
+		cout << "OK" << endl;
 	   
 	}
 	else
@@ -116,12 +123,27 @@ int main( int argc, char *argv[] )
 		exit( 1 );
 	}
 
+
+	//Initialiser GLEW
+	cout << "[ETAT]: Initialisation de glew...";
+
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+	{
+		cout << "[ERREUR]: Initialisation de glew a retournee une erreur : " << glewGetErrorString(err) << endl;
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		cout << "OK" << endl;
+	}
+
 	// Initialiser OpenGL
 	Initialiser();
 	// Boucle principale
 	glutMainLoop();
 
-	// Libérer les données de l'application
+	// Libérer les données de l'application (jamais appelé à cause de l'appel à glutMainLoop())
 	Liberer();
 
 	return EXIT_SUCCESS;
@@ -135,6 +157,27 @@ void Initialiser( void )
 	// Définir la fonction du test de profondeur
 	glDepthFunc( GL_LEQUAL );
 	
+
+
+	if (CVar::g_ComputerShadersON)
+	{
+		
+		CVar::g_ComputeShader = new CNuanceurCalculProg(CVar::g_ComputeShaderPath, true);
+		
+		
+		////create and compile compute shader
+		//glCreateShader(GL_COMPUTE_SHADER);
+		//const char* sourceCode = getSourceCode(CCst::g_ComputeShaderPath).c_str();
+		//glShaderSource(CVar::g_ComputeShaderID, 1, &sourceCode, NULL);
+		//glCompileShader(CVar::g_ComputeShaderID);
+
+
+		////Create program, attach and link compute shader
+		//CVar::g_ShaderProgramID = glCreateProgram();
+		//glAttachShader(CVar::g_ShaderProgramID, CVar::g_ComputeShaderID);
+		//glLinkProgram(CVar::g_ShaderProgramID);
+	}
+
 	cout << "[ETAT]: Lancer de rayons..." << endl;
 
 	// Obtenir le temps courant
@@ -170,6 +213,7 @@ void Initialiser( void )
    cout << "[ETAT]: Termine! --> Temps total de rendu : " << Time << " secondes" << endl;
 }
 
+
 void Redimensionner( int w, int h )
 {
 	CVar::g_LargeurViewport = w;
@@ -190,6 +234,9 @@ void RafraichirProjection( void )
 
 void Liberer( void )
 {
+	//free shader object
+	delete CVar::g_ComputeShader;
+
 	CVar::g_GestionnaireDeScene->LibererInstance();
 	CVar::g_GestionnaireDeScene = NULL;
 }
@@ -216,3 +263,4 @@ void Dessiner( void )
 
 	glutSwapBuffers();
 }
+

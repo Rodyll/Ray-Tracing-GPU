@@ -23,6 +23,9 @@ class CCst : public Singleton<CCst>
         static const int g_FenetreX;
         /// La position en y de la fenêtre GLUT
         static const int g_FenetreY;
+
+
+
 };
 
 #endif

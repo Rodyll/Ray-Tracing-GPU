@@ -65,7 +65,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>glew32.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>glew\lib; glut\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32; glut\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -99,11 +99,13 @@
     <ClCompile Include="Lumiere.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Matrice4.cpp" />
+    <ClCompile Include="NuanceurCalculProg.cpp" />
     <ClCompile Include="Plan.cpp" />
     <ClCompile Include="Quadrique.cpp" />
     <ClCompile Include="Rayon.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="textfile.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Var.cpp" />
     <ClCompile Include="Vecteur3.cpp" />
@@ -116,12 +118,14 @@
     <ClInclude Include="Lumiere.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Matrice4.h" />
+    <ClInclude Include="NuanceurCalculProg.h" />
     <ClInclude Include="Plan.h" />
     <ClInclude Include="Quadrique.h" />
     <ClInclude Include="Rayon.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="textfile.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Var.h" />
     <ClInclude Include="Vecteur3.h" />
