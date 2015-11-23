@@ -15,12 +15,15 @@ using namespace Scene;
 #define MAX_NB_QUADRICS 10
 #define MAX_NB_TRIANGLES 10
 #define MAX_NB_PLANES 10
-#define NB_SURFACETYPE 2
+#define NB_SURFACETYPE 3
 
 #define QUADRICTYPE_SIZE 4
 #define TRIANGLETYPE_SIZE 2
+#define PLANETYPE_SIZE 2
 
-enum { QUADRIC, TRIANGLES };
+#define MAX_VARNAME_SIZE 64
+
+enum { QUADRIC, TRIANGLE, PLANE };
 
 
 
@@ -692,7 +695,8 @@ void CScene::LancerRayons(void)
 		//Create structures similar to the GLSL ones (needed to generate uniform names)
 		const char* uniformNames[NB_SURFACETYPE] = {
 			"quadrics",
-			"triangles"
+			"triangles",
+			"planes"
 		};
 
 		const char* quadricNames[QUADRICTYPE_SIZE] = {
@@ -706,20 +710,36 @@ void CScene::LancerRayons(void)
 			"m_normal"
 		};
 
+		const char* planeNames[PLANETYPE_SIZE] = {
+			"m_normal",
+			"m_cst"
+		};
 
-		size_t nbUniforms = nbQuadrics*QUADRICTYPE_SIZE + nbTriangles*TRIANGLETYPE_SIZE;
+
+		//size_t nbUniforms = nbQuadrics*QUADRICTYPE_SIZE + nbTriangles*TRIANGLETYPE_SIZE + nbPlanes*PLANETYPE_SIZE;
 
 		//Init an array of names for each surface type
-		char** QuadricCompleteNames = new char*[nbQuadrics];
-		for (size_t i = 0; i < nbUniforms; i++)
+		int nbUnifQuadric = nbQuadrics*QUADRICTYPE_SIZE;
+		int nbUnifTriangle = nbTriangles*TRIANGLETYPE_SIZE;
+		int nbUnifPlane = nbPlanes*PLANETYPE_SIZE;
+
+
+		char** quadricCompleteNames = new char*[nbUnifQuadric];
+		for (size_t i = 0; i < nbUnifQuadric; i++)
 		{
-			QuadricCompleteNames[i] = new char[64];
+			quadricCompleteNames[i] = new char[MAX_VARNAME_SIZE];
 		}
 
-		char** TriangleCompleteNames = new char*[nbTriangles];
-		for (size_t i = 0; i < nbUniforms; i++)
+		char** triangleCompleteNames = new char*[nbUnifTriangle];
+		for (size_t i = 0; i < nbUnifTriangle; i++)
 		{
-			TriangleCompleteNames[i] = new char[64];
+			triangleCompleteNames[i] = new char[MAX_VARNAME_SIZE];
+		}
+
+		char** planeCompleteNames = new char*[nbUnifPlane];
+		for (size_t i = 0; i < nbUnifPlane; i++)
+		{
+			planeCompleteNames[i] = new char[MAX_VARNAME_SIZE];
 		}
 
 
@@ -727,37 +747,73 @@ void CScene::LancerRayons(void)
 		//for quadrics
 		for (size_t i = 0; i < nbQuadrics; i++)
 		{
-			int offset = i * QUADRICTYPE_SIZE;
+			int offset = i*QUADRICTYPE_SIZE;
 			for (size_t j = 0; j < QUADRICTYPE_SIZE; j++)
 			{
 				string s = std::to_string(i);
-				strcpy(QuadricCompleteNames[offset + j], uniformNames[0]);
-				strcat(QuadricCompleteNames[offset + j], "[");
-				strcat(QuadricCompleteNames[offset + j], s.c_str());
-				strcat(QuadricCompleteNames[offset + j], "].");
-				strcat(QuadricCompleteNames[offset + j], quadricNames[j]);
-				cout << "quadric : " << offset + j << " | " << QuadricCompleteNames[offset + j] << endl;
+				strcpy(quadricCompleteNames[offset + j], uniformNames[QUADRIC]);
+				strcat(quadricCompleteNames[offset + j], "[");
+				strcat(quadricCompleteNames[offset + j], s.c_str());
+				strcat(quadricCompleteNames[offset + j], "].");
+				strcat(quadricCompleteNames[offset + j], quadricNames[j]);
+				//cout << "quadric : " << offset + j << " | " << quadricCompleteNames[offset + j] << endl;
 			}
 		}
 
+		//for triangles
 		for (size_t i = 0; i < nbTriangles; i++)
 		{
-			int offset = nbQuadrics + i * TRIANGLETYPE_SIZE;
+			int offset = i*TRIANGLETYPE_SIZE;
 			for (size_t j = 0; j < TRIANGLETYPE_SIZE; j++)
 			{
 				string s = std::to_string(i);
-				strcpy(TriangleCompleteNames[offset + j], uniformNames[1]);
-				strcat(TriangleCompleteNames[offset + j], "[");
-				strcat(TriangleCompleteNames[offset + j], s.c_str());
-				strcat(TriangleCompleteNames[offset + j], "].");
-				strcat(TriangleCompleteNames[offset + j], triangleNames[j]);
-				cout << "triangles : " << offset + j << " | " << TriangleCompleteNames[offset + j] << endl;
+				strcpy(triangleCompleteNames[offset + j], uniformNames[TRIANGLE]);
+				strcat(triangleCompleteNames[offset + j], "[");
+				strcat(triangleCompleteNames[offset + j], s.c_str());
+				strcat(triangleCompleteNames[offset + j], "].");
+				strcat(triangleCompleteNames[offset + j], triangleNames[j]);
+				//cout << "triangles : " << offset + j << " | " << triangleCompleteNames[offset + j] << endl;
+			}
+		}
+
+		//for planes
+		for (size_t i = 0; i < nbPlanes; i++)
+		{
+			int offset = i*PLANETYPE_SIZE;
+			for (size_t j = 0; j < PLANETYPE_SIZE; j++)
+			{
+				string s = std::to_string(i);
+				strcpy(planeCompleteNames[offset + j], uniformNames[PLANE]);
+				strcat(planeCompleteNames[offset + j], "[");
+				strcat(planeCompleteNames[offset + j], s.c_str());
+				strcat(planeCompleteNames[offset + j], "].");
+				strcat(planeCompleteNames[offset + j], planeNames[j]);
+				//cout << "planes : " << offset + j << " | " << planeCompleteNames[offset + j] << endl;
 
 			}
 		}
 
+
+		//****************************************************************************
+		//DEBUG ZONE
+		for (size_t i = 0; i < nbUnifQuadric; ++i) {
+			cout << quadricCompleteNames[i] << endl;
+		}
+		cout << endl;
+		
+
+		for (size_t i = 0; i < nbUnifTriangle; ++i) {
+			cout << triangleCompleteNames[i] << endl;
+		}
+		cout << endl;
+		
+
+		for (size_t i = 0; i < nbUnifPlane; ++i) {
+			cout << planeCompleteNames[i] << endl;
+		}
 		cout << endl;
 
+		//****************************************************************************
 
 		//Based on the surface type and previous generated names for uniforms, get uniform index and update its value
 
@@ -766,23 +822,27 @@ void CScene::LancerRayons(void)
 		GLint** offset = new GLint*[NB_SURFACETYPE];
 		GLint** type = new GLint*[NB_SURFACETYPE];
 
-		//not good perf I think with this **pointer, should use ***pointer
+		//TODO : not good perf I think with this **pointer, should use ***pointer
 		const char** curNames;
 		for (size_t i = 0; i < NB_SURFACETYPE; i++)
 		{
 			size_t curSize = 0;
 			switch (i)
 			{
-			case 0:
+			case QUADRIC :
 				curSize = QUADRICTYPE_SIZE;
 				curNames = quadricNames;
 				break;
-			case 1:
+			case TRIANGLE :
 				curSize = TRIANGLETYPE_SIZE;
 				curNames = triangleNames;
 				break;
+			case PLANE : 
+				curSize = PLANETYPE_SIZE;
+				curNames = planeNames;
+				break;
 			default:
-				cout << "[WARNING] : Not value matching for current size type" << endl;
+				cout << "[WARNING] : Not value matching for current size type :" << i << endl;
 				break;
 			}
 
@@ -860,16 +920,16 @@ void CScene::LancerRayons(void)
 		//Clean memory
 		for (size_t i = 0; i < nbQuadrics; i++)
 		{
-			delete QuadricCompleteNames[i];
+			delete quadricCompleteNames[i];
 		}
-		delete[] QuadricCompleteNames;
+		delete[] quadricCompleteNames;
 
 
 		for (size_t i = 0; i < nbTriangles; i++)
 		{
-			delete TriangleCompleteNames[i];
+			delete triangleCompleteNames[i];
 		}
-		delete[] TriangleCompleteNames;
+		delete[] triangleCompleteNames;
 
 		for (size_t i = 0; i < NB_SURFACETYPE; i++)
 		{

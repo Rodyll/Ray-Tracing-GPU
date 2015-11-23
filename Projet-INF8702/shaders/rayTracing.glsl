@@ -4,7 +4,7 @@
 //Perhaps to change for constant values to share it with the app
 #define MAX_NB_QUADRICS 10
 #define MAX_NB_TRIANGLES 10
-
+#define MAX_NB_PLANES 10
 
 ///inputs
 
@@ -42,6 +42,11 @@ struct Triangle {
 	vec4 m_normal;
 };
 
+struct Plan {
+	vec4 m_normal;
+	double m_cst;
+};
+
 //struct Rayon
 //{
 //	vec3 m_origine;
@@ -56,6 +61,7 @@ layout(std140, binding = 0) uniform SurfacesData
 {
 	Quadrique quadrics[MAX_NB_QUADRICS];
 	Triangle triangles[MAX_NB_TRIANGLES];
+	Plan planes[MAX_NB_PLANES];
 };
 
 
