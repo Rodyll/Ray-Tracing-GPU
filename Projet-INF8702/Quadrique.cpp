@@ -13,11 +13,11 @@ using namespace Scene;
 ///
 ///////////////////////////////////////////////////////////////////////////////
 CQuadrique::CQuadrique( void )
-    : ISurface     (                  )
-    , m_Quadratique( CVecteur3::ZERO  )
-    , m_Lineaire   ( CVecteur3::ZERO  )
-    , m_Mixte      ( CVecteur3::ZERO  )
-    , m_Cst        ( RENDRE_REEL( 0 ) )
+	: ISurface     (                  )
+	, m_Quadratique( CVecteur3::ZERO  )
+	, m_Lineaire   ( CVecteur3::ZERO  )
+	, m_Mixte      ( CVecteur3::ZERO  )
+	, m_Cst        ( RENDRE_REEL( 0 ) )
 {}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,11 +33,11 @@ CQuadrique::CQuadrique( void )
 ///
 ///////////////////////////////////////////////////////////////////////////////
 CQuadrique::CQuadrique( const CQuadrique& Quadric )
-    : ISurface     ( Quadric               )
-    , m_Quadratique( Quadric.m_Quadratique )
-    , m_Lineaire   ( Quadric.m_Lineaire    )
-    , m_Mixte      ( Quadric.m_Mixte       )
-    , m_Cst        ( Quadric.m_Cst         )
+	: ISurface     ( Quadric               )
+	, m_Quadratique( Quadric.m_Quadratique )
+	, m_Lineaire   ( Quadric.m_Lineaire    )
+	, m_Mixte      ( Quadric.m_Mixte       )
+	, m_Cst        ( Quadric.m_Cst         )
 {}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,12 +68,12 @@ CQuadrique::~CQuadrique( void )
 ///////////////////////////////////////////////////////////////////////////////
 CQuadrique& CQuadrique::operator = ( const CQuadrique& Quadric )
 {
-    ISurface::operator =( Quadric );
-    m_Quadratique = Quadric.m_Quadratique;
-    m_Lineaire    = Quadric.m_Lineaire;
-    m_Mixte       = Quadric.m_Mixte;
-    m_Cst         = Quadric.m_Cst;
-    return ( *this );
+	ISurface::operator =( Quadric );
+	m_Quadratique = Quadric.m_Quadratique;
+	m_Lineaire    = Quadric.m_Lineaire;
+	m_Mixte       = Quadric.m_Mixte;
+	m_Cst         = Quadric.m_Cst;
+	return ( *this );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,11 +90,11 @@ CQuadrique& CQuadrique::operator = ( const CQuadrique& Quadric )
 ///////////////////////////////////////////////////////////////////////////////
 ostream& CQuadrique::AfficherInfoDebug( ostream& Out ) const
 {
-    Out << "[DEBUG]: Quadric.Quadratique       = " << m_Quadratique << endl;
-    Out << "[DEBUG]: Quadric.Lineaire          = " << m_Lineaire    << endl;
-    Out << "[DEBUG]: Quadric.Mixte             = " << m_Mixte       << endl;
-    Out << "[DEBUG]: Quadric.Constante         = " << m_Cst;
-    return Out;
+	Out << "[DEBUG]: Quadric.Quadratique       = " << m_Quadratique << endl;
+	Out << "[DEBUG]: Quadric.Lineaire          = " << m_Lineaire    << endl;
+	Out << "[DEBUG]: Quadric.Mixte             = " << m_Mixte       << endl;
+	Out << "[DEBUG]: Quadric.Constante         = " << m_Cst;
+	return Out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,10 +113,10 @@ void CQuadrique::Pretraitement( void )
    // R. Goldman, "Two Approach to a Computer Model for Quadric Surfaces",
    // IEEE CG&A, Sept 1983, pp.21
    
-    REAL A = m_Quadratique.x;
+	REAL A = m_Quadratique.x;
 	REAL B = m_Quadratique.y;
-    REAL C = m_Quadratique.z;
-    REAL D = m_Mixte.z    * RENDRE_REEL( 0.5 );
+	REAL C = m_Quadratique.z;
+	REAL D = m_Mixte.z    * RENDRE_REEL( 0.5 );
 	REAL E = m_Mixte.x    * RENDRE_REEL( 0.5 );
 	REAL F = m_Mixte.y    * RENDRE_REEL( 0.5 );
 	REAL G = m_Lineaire.x * RENDRE_REEL( 0.5 );
@@ -125,16 +125,16 @@ void CQuadrique::Pretraitement( void )
 	REAL K = m_Cst;
 
 	CMatrice4 Q( A, D, F, G,
-			     D, B, E, H,
-			     F, E, C, J,
-			     G, H, J, K );
+				 D, B, E, H,
+				 F, E, C, J,
+				 G, H, J, K );
 
-    CMatrice4 Inverse = m_Transformation.Inverse();
+	CMatrice4 Inverse = m_Transformation.Inverse();
 
-    Q = Inverse * Q * Inverse.Transpose();
+	Q = Inverse * Q * Inverse.Transpose();
 
-    m_Quadratique.x = Q[ 0 ][ 0 ];
-    m_Quadratique.y = Q[ 1 ][ 1 ];
+	m_Quadratique.x = Q[ 0 ][ 0 ];
+	m_Quadratique.y = Q[ 1 ][ 1 ];
 	m_Quadratique.z = Q[ 2 ][ 2 ];
 	m_Cst           = Q[ 3 ][ 3 ];
 	m_Mixte.x       = Q[ 1 ][ 2 ] * RENDRE_REEL( 2.0 );
@@ -142,7 +142,7 @@ void CQuadrique::Pretraitement( void )
 	m_Mixte.z       = Q[ 0 ][ 1 ] * RENDRE_REEL( 2.0 );
 	m_Lineaire.x    = Q[ 0 ][ 3 ] * RENDRE_REEL( 2.0 );
 	m_Lineaire.y    = Q[ 1 ][ 3 ] * RENDRE_REEL( 2.0 );
-    m_Lineaire.z    = Q[ 2 ][ 3 ] * RENDRE_REEL( 2.0 );
+	m_Lineaire.z    = Q[ 2 ][ 3 ] * RENDRE_REEL( 2.0 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,93 +159,93 @@ void CQuadrique::Pretraitement( void )
 ///////////////////////////////////////////////////////////////////////////////
 CIntersection CQuadrique::Intersection( const CRayon& Rayon )
 {
-    CIntersection Result;
+	CIntersection Result;
 
-    // algorithme d'intersection tiré de ... 
-    // Eric Haines, Paul Heckbert "An Introduction to Rayon Tracing",
-    // Academic Press, Edited by Andrw S. Glassner, pp.68-73 & 288-293
+	// algorithme d'intersection tiré de ... 
+	// Eric Haines, Paul Heckbert "An Introduction to Rayon Tracing",
+	// Academic Press, Edited by Andrw S. Glassner, pp.68-73 & 288-293
 
-    CVecteur3 RayonDirection = Rayon.ObtenirDirection();
-    CVecteur3 RayonOrigin    = Rayon.ObtenirOrigine();
+	CVecteur3 RayonDirection = Rayon.ObtenirDirection();
+	CVecteur3 RayonOrigin    = Rayon.ObtenirOrigine();
 
-    const REAL ACoeff = RayonDirection.x * ( m_Quadratique.x * RayonDirection.x   +
-                                             m_Mixte.z       * RayonDirection.y   +
-                                             m_Mixte.y       * RayonDirection.z ) +
-                        RayonDirection.y * ( m_Quadratique.y * RayonDirection.y   +
-                                             m_Mixte.x       * RayonDirection.z ) +
-                        RayonDirection.z * ( m_Quadratique.z * RayonDirection.z );
+	const REAL ACoeff = RayonDirection.x * ( m_Quadratique.x * RayonDirection.x   +
+											 m_Mixte.z       * RayonDirection.y   +
+											 m_Mixte.y       * RayonDirection.z ) +
+						RayonDirection.y * ( m_Quadratique.y * RayonDirection.y   +
+											 m_Mixte.x       * RayonDirection.z ) +
+						RayonDirection.z * ( m_Quadratique.z * RayonDirection.z );
 
-    const REAL BCoeff = RayonDirection.x * ( m_Quadratique.x * RayonOrigin.x + RENDRE_REEL( 0.5 )                     *
-                                           ( m_Mixte.z * RayonOrigin.y + m_Mixte.y * RayonOrigin.z + m_Lineaire.x ) ) +
-                        RayonDirection.y * ( m_Quadratique.y * RayonOrigin.y + RENDRE_REEL( 0.5 )                     * 
-                                           ( m_Mixte.z * RayonOrigin.x + m_Mixte.x * RayonOrigin.z + m_Lineaire.y ) ) +
-                        RayonDirection.z * ( m_Quadratique.z * RayonOrigin.z + RENDRE_REEL( 0.5 )                     * 
-                                           ( m_Mixte.y * RayonOrigin.x + m_Mixte.x * RayonOrigin.y + m_Lineaire.z ) );
+	const REAL BCoeff = RayonDirection.x * ( m_Quadratique.x * RayonOrigin.x + RENDRE_REEL( 0.5 )                     *
+										   ( m_Mixte.z * RayonOrigin.y + m_Mixte.y * RayonOrigin.z + m_Lineaire.x ) ) +
+						RayonDirection.y * ( m_Quadratique.y * RayonOrigin.y + RENDRE_REEL( 0.5 )                     * 
+										   ( m_Mixte.z * RayonOrigin.x + m_Mixte.x * RayonOrigin.z + m_Lineaire.y ) ) +
+						RayonDirection.z * ( m_Quadratique.z * RayonOrigin.z + RENDRE_REEL( 0.5 )                     * 
+										   ( m_Mixte.y * RayonOrigin.x + m_Mixte.x * RayonOrigin.y + m_Lineaire.z ) );
 
-    const REAL CCoeff = RayonOrigin.x * ( m_Quadratique.x * RayonOrigin.x   +
-                                          m_Mixte.z       * RayonOrigin.y   +
-                                          m_Mixte.y       * RayonOrigin.z   +
-                                          m_Lineaire.x                    ) +
-                        RayonOrigin.y * ( m_Quadratique.y * RayonOrigin.y   +
-                                          m_Mixte.x       * RayonOrigin.z   +
-                                          m_Lineaire.y                    ) +
-                        RayonOrigin.z * ( m_Quadratique.z * RayonOrigin.z   +
-                                          m_Lineaire.z                    ) +
-                        m_Cst;
+	const REAL CCoeff = RayonOrigin.x * ( m_Quadratique.x * RayonOrigin.x   +
+										  m_Mixte.z       * RayonOrigin.y   +
+										  m_Mixte.y       * RayonOrigin.z   +
+										  m_Lineaire.x                    ) +
+						RayonOrigin.y * ( m_Quadratique.y * RayonOrigin.y   +
+										  m_Mixte.x       * RayonOrigin.z   +
+										  m_Lineaire.y                    ) +
+						RayonOrigin.z * ( m_Quadratique.z * RayonOrigin.z   +
+										  m_Lineaire.z                    ) +
+						m_Cst;
 
-    
-    if( ACoeff != 0.0 )
-    {
-        REAL Ka    = -BCoeff / ACoeff;
-        REAL Kb    =  CCoeff / ACoeff;
-        REAL Delta = Ka * Ka - Kb;
+	
+	if( ACoeff != 0.0 )
+	{
+		REAL Ka    = -BCoeff / ACoeff;
+		REAL Kb    =  CCoeff / ACoeff;
+		REAL Delta = Ka * Ka - Kb;
 
-        if( Delta > 0 )
-        {
-            Delta   = sqrt( Delta );
-            REAL T0 = Ka - Delta;
-            REAL T1 = Ka + Delta;
+		if( Delta > 0 )
+		{
+			Delta   = sqrt( Delta );
+			REAL T0 = Ka - Delta;
+			REAL T1 = Ka + Delta;
 
-            REAL Distance = Min<REAL>( T0, T1 );
-            if( Distance < EPSILON )
-                Distance = Max<REAL>( T0, T1 );
-            
-            if( !( Distance < 0 ) )
-            {
-                Result.AjusterDistance( Distance );
-                Result.AjusterSurface( this );
+			REAL Distance = Min<REAL>( T0, T1 );
+			if( Distance < EPSILON )
+				Distance = Max<REAL>( T0, T1 );
+			
+			if( !( Distance < 0 ) )
+			{
+				Result.AjusterDistance( Distance );
+				Result.AjusterSurface( this );
 
-                // Calcule la normale de surface
-                CVecteur3 HitPt = RayonOrigin + Distance * RayonDirection;
-                
-                CVecteur3 Normal;
-                Normal.x = RENDRE_REEL( 2.0 ) * m_Quadratique.x * HitPt.x +
-                           m_Mixte.y * HitPt.z                            +
-                           m_Mixte.z * HitPt.y                            +
-                           m_Lineaire.x;
+				// Calcule la normale de surface
+				CVecteur3 HitPt = RayonOrigin + Distance * RayonDirection;
+				
+				CVecteur3 Normal;
+				Normal.x = RENDRE_REEL( 2.0 ) * m_Quadratique.x * HitPt.x +
+						   m_Mixte.y * HitPt.z                            +
+						   m_Mixte.z * HitPt.y                            +
+						   m_Lineaire.x;
 
-                Normal.y = RENDRE_REEL( 2.0 ) * m_Quadratique.y * HitPt.y +
-                           m_Mixte.x * HitPt.z                            +
-                           m_Mixte.z * HitPt.x                            +
-                           m_Lineaire.y;
+				Normal.y = RENDRE_REEL( 2.0 ) * m_Quadratique.y * HitPt.y +
+						   m_Mixte.x * HitPt.z                            +
+						   m_Mixte.z * HitPt.x                            +
+						   m_Lineaire.y;
 
-                Normal.z = RENDRE_REEL( 2.0 ) * m_Quadratique.z * HitPt.z +
-                           m_Mixte.x * HitPt.y                            +
-                           m_Mixte.y * HitPt.x                            +
-                           m_Lineaire.z;
+				Normal.z = RENDRE_REEL( 2.0 ) * m_Quadratique.z * HitPt.z +
+						   m_Mixte.x * HitPt.y                            +
+						   m_Mixte.y * HitPt.x                            +
+						   m_Lineaire.z;
 
-                Result.AjusterNormale( CVecteur3::Normaliser( Normal ) );
-            }
-        }
-    }
-    else
-    {
-        Result.AjusterSurface ( this );
-        Result.AjusterDistance( -RENDRE_REEL( 0.5 ) * ( CCoeff / BCoeff ) );
-        Result.AjusterNormale ( CVecteur3::Normaliser( m_Lineaire ) );
-    }
+				Result.AjusterNormale( CVecteur3::Normaliser( Normal ) );
+			}
+		}
+	}
+	else
+	{
+		Result.AjusterSurface ( this );
+		Result.AjusterDistance( -RENDRE_REEL( 0.5 ) * ( CCoeff / BCoeff ) );
+		Result.AjusterNormale ( CVecteur3::Normaliser( m_Lineaire ) );
+	}
 
-    return Result;
+	return Result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -260,5 +260,5 @@ CIntersection CQuadrique::Intersection( const CRayon& Rayon )
 ///////////////////////////////////////////////////////////////////////////////
 CQuadrique* CQuadrique::Copier( void ) const
 {
-    return new CQuadrique( *this );
+	return new CQuadrique( *this );
 }

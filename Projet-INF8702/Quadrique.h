@@ -24,10 +24,16 @@ namespace Scene
         private:
             /// Termes quadratiques
             CVecteur3 m_Quadratique;
+
+			float padding1;
             /// Termes linéaires
             CVecteur3 m_Lineaire;
+
+			float padding2;
             /// Termes Linéaires
             CVecteur3 m_Mixte;
+
+			float padding3;
             /// Terme constant
             REAL      m_Cst;
 

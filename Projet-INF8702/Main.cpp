@@ -160,22 +160,11 @@ void Initialiser( void )
 
 
 	if (CVar::g_ComputerShadersON)
-	{
-		
+	{	
 		CVar::g_ComputeShader = new CNuanceurCalculProg(CVar::g_ComputeShaderPath, true);
-		
-		
-		////create and compile compute shader
-		//glCreateShader(GL_COMPUTE_SHADER);
-		//const char* sourceCode = getSourceCode(CCst::g_ComputeShaderPath).c_str();
-		//glShaderSource(CVar::g_ComputeShaderID, 1, &sourceCode, NULL);
-		//glCompileShader(CVar::g_ComputeShaderID);
 
 
-		////Create program, attach and link compute shader
-		//CVar::g_ShaderProgramID = glCreateProgram();
-		//glAttachShader(CVar::g_ShaderProgramID, CVar::g_ComputeShaderID);
-		//glLinkProgram(CVar::g_ShaderProgramID);
+		//
 	}
 
 	cout << "[ETAT]: Lancer de rayons..." << endl;
