@@ -318,7 +318,7 @@ void CNuanceurCalculProg::compilerEtLierNuanceurs(char* ncStr)
    }
    // créer le programme des nuanceurs et lier
    prog_ = glCreateProgram();
-   glAttachShader(prog_,nuanceurCalculs);
+   glAttachShader(prog_, nuanceurCalculs);
    glLinkProgram(prog_);
 
    // afficher les erreurs de compilation et de linkage

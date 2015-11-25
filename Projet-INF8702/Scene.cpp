@@ -46,6 +46,7 @@ CScene::CScene(void)
 	, m_ResHauteur(0)
 	, m_InfoPixel(NULL)
 	, m_TextureScene(0)
+	, m_computedImage(0)
 	, m_CouleurArrierePlan(CCouleur::NOIR)
 	, m_NbRebondsMax(20)
 	, m_EnergieMinRayon(RENDRE_REEL(0.01))
@@ -213,7 +214,7 @@ void CScene::AjusterIndiceRefraction(const REAL IndiceRefraction)
 void CScene::TraiterFichierDeScene(const char* Fichier)
 {
 	fstream FichierScene(Fichier, ios::in);
-	size_t currSurfaceIdx = -1;
+	size_t currSurfaceIdx = 0;
 	if (FichierScene.is_open())
 	{
 		EtatTraitementScene EtatCourant = TRAITEMENT_SCENE;
@@ -503,6 +504,7 @@ void CScene::Liberer(void)
 
 	// Supprimer le rendu de scène
 	glDeleteTextures(1, &m_TextureScene);
+
 	delete m_InfoPixel;
 }
 
@@ -661,6 +663,17 @@ void CScene::LancerRayons(void)
 	CCouleur PixelColor;
 	int      PixelIdx = 0;
 
+	
+
+	// Créer une texture openGL (elle sera remplie selon la méthode choisie)
+	glGenTextures(1, &m_TextureScene);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_TextureScene);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WIDTH, m_ResLargeur, )
 
 	if (CVar::g_ComputerShadersON)
 	{
@@ -670,6 +683,11 @@ void CScene::LancerRayons(void)
 		GLint uniformSize = 0;
 		glGetActiveUniformBlockiv(prog, uniformIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformSize);
 
+		//DEBUG
+		cout << "uniformIndex = " << uniformIndex << endl;
+		cout << "uniformSize = " << uniformSize << endl;
+		//
+
 		GLubyte* buffer = (GLubyte*) malloc(uniformSize);
 		if (buffer == nullptr)
 		{
@@ -677,12 +695,64 @@ void CScene::LancerRayons(void)
 			exit(EXIT_FAILURE);
 		}
 
+
+
+		GLuint imageIndex = glGetUniformLocation(CVar::g_ComputeShader->getProg(), "renderedImage");
+
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glUniform1i(imageIndex, 1);
+		glBindTexture(GL_TEXTURE_2D, m_TextureScene);
+		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_ResLargeur, m_ResHauteur);
+		glBindImageTexture(1, m_TextureScene, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+		//Allocate texture
+		/*glGenBuffers(1, &m_computedImage);
+		glBindBuffer(GL_TEXTURE_BUFFER, m_computedImage);
+		glBufferData(GL_TEXTURE_BUFFER, TypeSize(GL_FLOAT) * m_ResLargeur * m_ResHauteur * 3, NULL, GL_DYNAMIC_COPY);*/
+
+		//GLuint glGenTextures()
+		//GLuint imageIndex = glGetUniformLocation(prog, "renderedImage");
+
+		/*glActiveTexture(GL_TEXTURE0);*/
+		//glUniform1i(m_computedImage, 2);
+		//glBindTexture(GL_TEXTURE_2D, m_TextureScene);
+		
+
+		//GLuint ssboBuf;
+		//// Generate the buffer, bind it to create it and declare storage
+		//GLuint ssboIndex = glGetProgramResourceIndex(prog, GL_SHADER_STORAGE_BLOCK, "ssbo");
+		//GLuint ssboBindingIndex;
+		//glShaderStorageBlockBinding(prog, ssboIndex, ssboBindingIndex);
+		//glGenBuffers(1, &ssboBuf);
+		//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboBuf);
+		//glBufferData(GL_SHADER_STORAGE_BUFFER, TypeSize(GL_FLOAT) * m_ResLargeur * m_ResHauteur * 3 , NULL, GL_DYNAMIC_COPY);
+		//// Now bind the buffer to the zeroth GL_SHADER_STORAGE_BUFFER
+		//// binding point
+		//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboBuf);
+		//glUniform1fv(infoPixelIndex, m_ResLargeur * m_ResHauteur * 3, )
+
+		//// Créer une texture openGL
+		//glGenTextures(1, &m_TextureScene);
+		//glBindTexture(GL_TEXTURE_2D, m_TextureScene);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, m_InfoPixel);
+
+
 		size_t nbSurfaces = m_Surfaces.size();
 		size_t nbQuadrics = m_quadricsIndexes.size();
 		size_t nbTriangles = m_trianglesIndexes.size();
 		size_t nbPlanes = m_planesIndexes.size();
 
-		//CHeck if enough space in allocated surface buffers
+		
+		//DEBUG
+		cout << "nbSurfaces = " << nbSurfaces << endl;
+		cout << "nbQuadrics = " << nbQuadrics << endl;
+		cout << "nbTriangles = " << nbTriangles << endl;
+		cout << "nbPlanes = " << nbPlanes << endl;
+		//
+
+
+		//Check if enough space in allocated surface buffers
 		if (nbQuadrics > MAX_NB_QUADRICS || nbTriangles > MAX_NB_TRIANGLES || nbPlanes > MAX_NB_PLANES)
 		{
 			std::cout << "[ERROR] : Too many surfaces in app to allocate it in the GLSL uniform struct";
@@ -817,47 +887,58 @@ void CScene::LancerRayons(void)
 
 		//Based on the surface type and previous generated names for uniforms, get uniform index and update its value
 
-		GLuint** indices = new GLuint*[NB_SURFACETYPE];
+		//GLuint** indices = new GLuint*[NB_SURFACETYPE];
 		GLint** size = new GLint*[NB_SURFACETYPE];
 		GLint** offset = new GLint*[NB_SURFACETYPE];
 		GLint** type = new GLint*[NB_SURFACETYPE];
 
 		//TODO : not good perf I think with this **pointer, should use ***pointer
-		const char** curNames;
+		char** curNames;
 		for (size_t i = 0; i < NB_SURFACETYPE; i++)
 		{
 			size_t curSize = 0;
 			switch (i)
 			{
 			case QUADRIC :
-				curSize = QUADRICTYPE_SIZE;
-				curNames = quadricNames;
+				curSize = QUADRICTYPE_SIZE*nbQuadrics;
+				curNames = quadricCompleteNames;
 				break;
 			case TRIANGLE :
-				curSize = TRIANGLETYPE_SIZE;
-				curNames = triangleNames;
+				curSize = TRIANGLETYPE_SIZE*nbTriangles;
+				curNames = triangleCompleteNames;
 				break;
 			case PLANE : 
-				curSize = PLANETYPE_SIZE;
-				curNames = planeNames;
+				curSize = PLANETYPE_SIZE*nbPlanes;
+				curNames = planeCompleteNames;
 				break;
 			default:
 				cout << "[WARNING] : Not value matching for current size type :" << i << endl;
 				break;
 			}
 
-			indices[i] = new GLuint(curSize);
-			size[i] = new GLint(curSize);
-			offset[i] = new GLint(curSize);
-			type[i] = new GLint(curSize);
+			GLuint* indices = new GLuint[curSize];
+			size[i] = new GLint[curSize];
+			offset[i] = new GLint[curSize];
+			type[i] = new GLint[curSize];
 
 
-			glGetUniformIndices(prog, curSize, curNames, indices[i]);
+			glGetUniformIndices(prog, curSize, curNames, indices);
 
-			glGetActiveUniformsiv(prog, curSize, indices[i], GL_UNIFORM_OFFSET, offset[i]);
-			glGetActiveUniformsiv(prog, curSize, indices[i], GL_UNIFORM_SIZE, size[i]);
-			glGetActiveUniformsiv(prog, curSize, indices[i], GL_UNIFORM_TYPE, type[i]);
 
+			//DEBUG
+			for (size_t cpt = 0; cpt < curSize; cpt++)
+			{
+				cout << "indices[" << cpt << "] = " << indices[cpt] << endl;
+			}
+			cout << endl;
+			//
+
+			glGetActiveUniformsiv(prog, curSize, indices, GL_UNIFORM_OFFSET, offset[i]);
+			glGetActiveUniformsiv(prog, curSize, indices, GL_UNIFORM_SIZE, size[i]);
+			glGetActiveUniformsiv(prog, curSize, indices, GL_UNIFORM_TYPE, type[i]);
+
+			//free memory
+			delete[] indices;
 		}
 
 
@@ -908,7 +989,6 @@ void CScene::LancerRayons(void)
 		//}
 
 
-
 		//Create buffer
 		GLuint ubo;
 		glGenBuffers(1, &ubo);
@@ -933,21 +1013,24 @@ void CScene::LancerRayons(void)
 
 		for (size_t i = 0; i < NB_SURFACETYPE; i++)
 		{
-			delete indices[i];
+			//delete indices[i];
 			delete size[i];
 			delete offset[i];
 			delete type[i];
 		}
 
-		delete[] indices;
+		//delete[] indices;
 		delete[] size;
 		delete[] offset;
 		delete[] type;
 
 		//Activate compute shader
 		CVar::g_ComputeShader->activer();
-		glDispatchCompute(CVar::g_LargeurViewport / 16, CVar::g_HauteurViewport / 16, 1);
-		return;
+		glDispatchCompute(m_ResLargeur / 16, m_ResHauteur/ 16, 1);
+		//glDispatchCompute(CVar::g_LargeurViewport, CVar::g_HauteurViewport, 1);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	}
 	else
 	{
@@ -977,13 +1060,20 @@ void CScene::LancerRayons(void)
 			}
 		}
 	}
-
-	// Créer une texture openGL
-	glGenTextures(1, &m_TextureScene);
+	//Specify texture image from data in m_InfoPixel 
+	glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, m_TextureScene);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, m_InfoPixel);
+
+	if (CVar::g_ComputerShadersON)
+	{
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, NULL);
+			
+			
+	}
+	else
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, m_InfoPixel);
+	}
 }
 
 /* Helper function to convert GLSL types to storage sizes */
@@ -997,6 +1087,9 @@ case Enum: size = Count * sizeof(Type); break
 		CASE(GL_FLOAT_VEC2, 2, GLfloat);
 		CASE(GL_FLOAT_VEC3, 3, GLfloat);
 		CASE(GL_FLOAT_VEC4, 4, GLfloat);
+		//WARNING : double size added ! Should be the right value (see https://www.opengl.org/wiki/OpenGL_Type)
+		CASE(GL_DOUBLE, 1, GLdouble);
+		//
 		CASE(GL_INT, 1, GLint);
 		CASE(GL_INT_VEC2, 2, GLint);
 		CASE(GL_INT_VEC3, 3, GLint);

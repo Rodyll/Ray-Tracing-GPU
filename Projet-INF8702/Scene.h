@@ -141,6 +141,9 @@ namespace Scene
 			/// Texture de rendu openGL
 			GLuint   m_TextureScene;
 
+			//image created from Compute shader (GPU Mode)
+			GLuint m_computedImage;
+
 			/// Caméra de scène
 			CameraDeScene   m_Camera;
 			/// La couleur de l'arrière-plan
@@ -156,6 +159,8 @@ namespace Scene
 			int  m_NbRebondsMax;
 			/// L'Énergie minimale d'un rayon
 			REAL m_EnergieMinRayon;
+
+
 	};
 }
 

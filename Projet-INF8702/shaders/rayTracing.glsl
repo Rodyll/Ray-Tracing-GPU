@@ -57,6 +57,8 @@ struct Plan {
 //};
 
 //Not enough place if not in uniform block
+//TODO : change to SSBO and std430 layout for more space and better layout
+//TODO : set SSBO readonly for safety
 layout(std140, binding = 0) uniform SurfacesData 
 {
 	Quadrique quadrics[MAX_NB_QUADRICS];
@@ -64,6 +66,14 @@ layout(std140, binding = 0) uniform SurfacesData
 	Plan planes[MAX_NB_PLANES];
 };
 
+
+//output 
+//TODO : (test writeonly)
+layout(rgba32f, binding = 1) uniform restrict image2D renderedImage;
+//buffer ssbo
+//{
+//	float[] infoPixel;
+//};
 
 //in/out
 //	- infoPixel
@@ -83,6 +93,12 @@ void main()
 	double test1 = quadrics[0].m_cst;
 	vec4 test2 = triangles[0].m_normal;
 
+	//int arrayIndex = gl_WorkGroupSize.x * glNumWorkGroups.x * gl_GlobalInvocation.y + gl_GlobalInvocation.x;
+	//infoPixel[arrayIndex] = 1.0;
+	//infoPixel[arrayIndex + 1] = 0.0;
+	//infoPixel[arrayIndex + 2] = 0.0;
+
+	imageStore(renderedImage, ivec2(gl_GlobalInvocationID.xy), vec4(1.0, 0.0, 0.0, 1.0));
 
 
 	//
