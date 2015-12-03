@@ -57,12 +57,17 @@ namespace Scene
 				m_Pts[ PointIdx ] = Pt;
 			}
 
+			inline void AjusterNormale(const CVecteur3& Normal) { m_Normale = Normal; }
+
+
 			/// Méthodes d'obtention
 			inline CVecteur3 ObtenirPoint( const int PointIdx ) const
 			{
 				assert( PointIdx > -1 && PointIdx < 3 );
 				return m_Pts[ PointIdx ];
 			}
+
+			inline CVecteur3 ObtenirNormale(void) const { return m_Normale; }
 
 			/// Public interface implementation
 			virtual void          Pretraitement( void );

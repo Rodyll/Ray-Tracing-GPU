@@ -66,8 +66,7 @@ namespace Scene
 			/// Release all scene data
 			void Liberer( void );
 
-			/// Convert GLSL types to storage sizes
-			size_t TypeSize(GLenum type);
+			
 
 
 		private:
@@ -114,6 +113,7 @@ namespace Scene
 			vector<size_t> m_trianglesIndexes;
 			vector<size_t> m_quadricsIndexes;
 			vector<size_t> m_planesIndexes;
+			vector<size_t> m_lightsIndexes;
 
 			/// Useful std typedefs
 			typedef std::vector< ISurface* >       SurfaceVecteur;
@@ -132,6 +132,17 @@ namespace Scene
 			/// Obtenir le filtre du matériau de surface
 			const CCouleur ObtenirFiltreDeSurface( CRayon& LumiereRayon ) const;
 			
+			/// Convert GLSL types to storage sizes
+			size_t TypeSize(GLenum type);
+
+			//Fill surface structure in buffer
+			void fillSurfaceStruct(GLubyte*& buffer, GLint* offset, GLint* size, GLint* type, ISurface* surface, int curIndex);
+			//For debug purpose
+			void printSurfaceStruct(GLubyte*& buffer, GLint* offset, GLint* size, GLint* type, ISurface* surface, int curIndex);
+
+
+
+
 			/// Resolution en largeur
 			int      m_ResLargeur;
 			/// Resolution en hauteur

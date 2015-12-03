@@ -18,7 +18,12 @@
 namespace Math3D
 {
     ///////////////////// TYPEDEFS ///////////////////////
-    typedef double REAL;
+    
+	//TODO : check if no drawbacks
+	//new
+	typedef float REAL;
+	//old
+	//typedef double REAL;
 
     ///////////////////// DEFINES ////////////////////////
     #ifndef M_PI
