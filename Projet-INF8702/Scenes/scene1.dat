@@ -1,0 +1,61 @@
+* --- fichier test pour Ray-Tracer ---
+
+* --- GENERAL ------------------------
+        * --- back-ground color: R G B ---
+        * --- pos camera ---
+        background: 0 0 150
+        origin: 100.0 30.0 400.0
+
+* --- un plan au sol (y = -45) ---
+* --- Ax + By + Cz -D = 0 ---
+Plane: plane_1
+        v_linear: 0.0 1.0 0.0 
+        v_const:  45.0
+        color:   10 255 11
+        ambient: 0.3
+        diffus:  0.7
+
+* --- un cube a gauche: cote = 60, pos = -70, 10, 10 ---
+Poly: polygon_1
+        point: 0 -80.0  20.0 80.0
+        point: 1 -80.0 -40.0 80.0
+        point: 2 -20.0 -40.0 80.0
+        color:  255 255 20
+
+* --- une tube a gauche: rayon = 40, pos = -100, 0, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: tube_1
+        v_quad:      1.0 0.0 1.0
+        v_linear:  200.0 0.0 0.0 
+        v_const:   8400.0
+        color:  200 10 200
+
+
+* --- un  ellipsoid au centre: a=40, b=20, c=200, pos = 0, 0, 0 ---
+    * (x-xo)^2/a^2 + (y-yo)^2/b^2 + (z-zo)^2/c^2 = 1
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: ellipse_3
+        v_quad:    0.000625 0.0025 0.000025
+        v_linear:  0.0 0.0 0.0 
+        v_const:  -1.0
+        color:  20 200 200
+
+* --- une sphere au centre: rayon = 40, pos = 0, 0, 0 ---
+    * (x-xo)^2 + (y-yo)^2 + (z-zo)^2 = R^2
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: sphere_2
+        v_quad:      1.0 1.0 1.0
+        v_linear:  -200.0 0.0 0.0 
+        v_const:   8400.0
+        color:  200 10 10
+
+* --- lumiere ---
+Lumiere: light_1
+        position: 200.0 400.0 600.0
+        intens:   1.0

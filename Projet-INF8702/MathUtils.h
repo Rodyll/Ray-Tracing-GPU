@@ -19,7 +19,6 @@ namespace Math3D
 {
     ///////////////////// TYPEDEFS ///////////////////////
     
-	//TODO : check if no drawbacks
 	//new
 	typedef float REAL;
 	//old
@@ -32,7 +31,8 @@ namespace Math3D
         #define PI M_PI
     #endif
 
-    #define EPSILON RENDRE_REEL( 1.0e-6 )
+	//new : Changed from 1.0e-6 to current value (to adapt precision to the 'float' type)
+    #define EPSILON RENDRE_REEL( 1.0e-2 )
 
     ///////////////////// MACROS /////////////////////////
     #define RENDRE_REEL( A ) static_cast<REAL>( A )

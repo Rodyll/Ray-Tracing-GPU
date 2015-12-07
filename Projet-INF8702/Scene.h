@@ -66,7 +66,8 @@ namespace Scene
 			/// Release all scene data
 			void Liberer( void );
 
-			
+			//Print OpenGL errors
+			void printOpenGLError();
 
 
 		private:

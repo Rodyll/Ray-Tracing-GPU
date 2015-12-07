@@ -1,23 +1,27 @@
 #include "Scene.h"
+
 #include <fstream>
+
 #include "StringUtils.h"
+#include "Var.h"
+#include "NuanceurCalculProg.h"
+
 #include "Triangle.h"
 #include "Plan.h"
 #include "Quadrique.h"
 
-#include "Var.h"
-#include "NuanceurCalculProg.h"
 using namespace std;
 using namespace Scene;
 
-
-//Perhaps to change for constant values to share it with the GLSL file
+//Defines for compute shader data copy
+//TODO : Perhaps to change for constant values to share it with the GLSL file
 #define MAX_NB_QUADRICS 10
 #define MAX_NB_TRIANGLES 10
 #define MAX_NB_PLANES 10
 #define MAX_NB_LIGHTS 10
 #define NB_SURFACETYPE 3
 
+#define U_GENERAL_SIZE 7
 
 #define SCENEDATATYPE_SIZE 8
 #define SURFACETYPE_SIZE 8
@@ -30,18 +34,19 @@ using namespace Scene;
 #define TRIANGLETYPE_SIZE_ALL (TRIANGLETYPE_SIZE + 1 + SURFACETYPE_SIZE)
 #define PLANETYPE_SIZE_ALL (PLANETYPE_SIZE - 1 + SURFACETYPE_SIZE)
 
-
 #define MAX_VARNAME_SIZE 64
 
-#define U_GENERAL_SIZE 7
+#define IMAGE_BINDING_INDEX 0
+#define GENERAL_BINDING_INDEX 1
+#define SCENEDATA_BINDING_INDEX 2
 
 enum { QUADRIC, TRIANGLE, PLANE, LIGHT };
 
 
-
+//others defines and const
 #define STRING_CHECKFIND( Buffer, String ) ( Buffer.find( String ) != string::npos )
 
-const REAL CScene::DIM_FILM_CAM = 0.024;
+const REAL CScene::DIM_FILM_CAM = 0.024f;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  private overloaded constructor  CScene \n
@@ -668,7 +673,6 @@ void CScene::LancerRayons(void)
 {
 	Initialiser();
 
-
 	REAL HalfH = tan(Deg2Rad<REAL>(m_Camera.Angle * RENDRE_REEL(0.5)));
 	REAL HalfW = (RENDRE_REEL(m_ResLargeur) / m_ResHauteur) * HalfH;
 	REAL InvResWidth = RENDRE_REEL(1.0) / m_ResLargeur;
@@ -678,7 +682,6 @@ void CScene::LancerRayons(void)
 	CCouleur PixelColor;
 	int      PixelIdx = 0;
 
-
 	// Créer une texture openGL (elle sera remplie selon la méthode choisie)
 	glGenTextures(1, &m_TextureScene);
 	glActiveTexture(GL_TEXTURE0);
@@ -686,16 +689,18 @@ void CScene::LancerRayons(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WIDTH, m_ResLargeur, )
-	
-	//DEBUG
-	//std::cout << "CScene::DIM_FILM_CAM = " << CScene::DIM_FILM_CAM << std::endl;
-
 	if (CVar::g_ComputerShadersON)
 	{
-		//1 - copy general data to first uniform block
 		GLuint prog = CVar::g_ComputeShader->getProg();
+
+		//1- Binding output image to the right texture
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_ResLargeur, m_ResHauteur, 0, GL_RGBA, GL_FLOAT, 0);
+		glBindImageTexture(IMAGE_BINDING_INDEX, m_TextureScene, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
+		//DEBUG
+		printOpenGLError();
+
+		//2 - copy general data to first uniform block
 		GLuint generalUniformIndex = glGetUniformBlockIndex(prog, "General");
 		if (generalUniformIndex == GL_INVALID_INDEX)
 		{
@@ -734,17 +739,13 @@ void CScene::LancerRayons(void)
 		glGetUniformIndices(prog, U_GENERAL_SIZE, generalNames, generalIndices);
 
 
-		//DEBUG
-		for (size_t cpt = 0; cpt < U_GENERAL_SIZE; cpt++)
-		{
-			cout << "generalIndices[" << cpt << "] = " << generalIndices[cpt] << endl;
-		}
-		cout << endl;
-		//
-
-		//int test[10] = { 0 };
-		//int value = 2;
-		//memcpy(test + 0, &value, 1 * sizeof(int));
+		////DEBUG
+		//for (size_t cpt = 0; cpt < U_GENERAL_SIZE; cpt++)
+		//{
+		//	cout << "generalIndices[" << cpt << "] = " << generalIndices[cpt] << endl;
+		//}
+		//cout << endl;
+		////
 
 		GLint* generalSize = new GLint[U_GENERAL_SIZE];
 		GLint* generalOffset = new GLint[U_GENERAL_SIZE];
@@ -756,8 +757,9 @@ void CScene::LancerRayons(void)
 		float camPosition[4] = { m_Camera.Position.x, m_Camera.Position.y, m_Camera.Position.z, 0.0f };
 		memcpy(generalBuffer + generalOffset[0], &camPosition, generalSize[0] * TypeSize(generalType[0]));
 		
+		CMatrice4 tmpMat = m_Camera.Orientation;// .Transpose();
 
-		memcpy(generalBuffer + generalOffset[1], m_Camera.Orientation.m, generalSize[1] * TypeSize(generalType[1]));
+		memcpy(generalBuffer + generalOffset[1], tmpMat.m, generalSize[1] * TypeSize(generalType[1]));
 		
 		//memcpy(generalBuffer + generalOffset[2], &m_ResLargeur, generalSize[2] * TypeSize(generalType[2]));
 		//memcpy(generalBuffer + generalOffset[3], &m_ResHauteur, generalSize[3] * TypeSize(generalType[3]));
@@ -778,8 +780,9 @@ void CScene::LancerRayons(void)
 		glGenBuffers(1, &generalUbo);
 		glBindBuffer(GL_UNIFORM_BUFFER, generalUbo);
 		glBufferData(GL_UNIFORM_BUFFER, generalUniformSize, generalBuffer, GL_STATIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, generalUniformIndex, generalUbo);
-
+		glBindBufferBase(GL_UNIFORM_BUFFER, GENERAL_BINDING_INDEX, generalUbo);
+		//test
+		//glUniformBlockBinding(prog, generalUniformIndex, GENERAL_BINDING_INDEX);
 
 
 		//TODO : Clean data (needed to query buffer, find another place to put it)
@@ -787,39 +790,24 @@ void CScene::LancerRayons(void)
 		//delete[] generalSize;
 		//delete[] generalOffset;
 		//delete[] generalType;
-		GLenum err(glGetError());
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
-
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened after General" << endl;//Process/log the error.
-		}
-
+		printOpenGLError();
+		
 
 		/***********************************************/
-		//2 - copy surfacesData to uniforms in shader
+		//3 - copy surfacesData to uniforms in shader
 		prog = CVar::g_ComputeShader->getProg();
-		GLuint uniformIndex = glGetUniformBlockIndex(prog, "SceneData");
-		if (uniformIndex == GL_INVALID_INDEX)
+		GLuint SceneDataUniformIndex = glGetUniformBlockIndex(prog, "SceneData");
+		if (SceneDataUniformIndex == GL_INVALID_INDEX)
 		{
 			std::cout << "[ERROR] : Can't find uniform block called 'SceneData'" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
 		GLint uniformSize = 0;
-		glGetActiveUniformBlockiv(prog, uniformIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformSize);
+		glGetActiveUniformBlockiv(prog, SceneDataUniformIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformSize);
 
 		//DEBUG
-		cout << "uniformIndex = " << uniformIndex << endl;
+		cout << "SceneDataUniformIndex = " << SceneDataUniformIndex << endl;
 		cout << "uniformSize = " << uniformSize << endl;
 		//
 
@@ -829,67 +817,6 @@ void CScene::LancerRayons(void)
 			std::cout << "[ERROR] : Can't allocate enough space for uniform buffer data" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-
-
-		//Binding output image to the right texture
-		GLuint imageIndex = glGetUniformLocation(CVar::g_ComputeShader->getProg(), "renderedImage");
-		//glUseProgram(prog);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		//glUniform1i(imageIndex, 1);
-		glProgramUniform1i(prog, imageIndex, 1);
-		err = glGetError();
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
-
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened after texture setup" << endl;//Process/log the error.
-		}
-		glBindTexture(GL_TEXTURE_2D, m_TextureScene);
-		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_ResLargeur, m_ResHauteur);
-		glBindImageTexture(1, m_TextureScene, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-
-		//Allocate texture
-		/*glGenBuffers(1, &m_computedImage);
-		glBindBuffer(GL_TEXTURE_BUFFER, m_computedImage);
-		glBufferData(GL_TEXTURE_BUFFER, TypeSize(GL_FLOAT) * m_ResLargeur * m_ResHauteur * 3, NULL, GL_DYNAMIC_COPY);*/
-
-		//GLuint glGenTextures()
-		//GLuint imageIndex = glGetUniformLocation(prog, "renderedImage");
-
-		/*glActiveTexture(GL_TEXTURE0);*/
-		//glUniform1i(m_computedImage, 2);
-		//glBindTexture(GL_TEXTURE_2D, m_TextureScene);
-		
-
-		//GLuint ssboBuf;
-		//// Generate the buffer, bind it to create it and declare storage
-		//GLuint ssboIndex = glGetProgramResourceIndex(prog, GL_SHADER_STORAGE_BLOCK, "ssbo");
-		//GLuint ssboBindingIndex;
-		//glShaderStorageBlockBinding(prog, ssboIndex, ssboBindingIndex);
-		//glGenBuffers(1, &ssboBuf);
-		//glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssboBuf);
-		//glBufferData(GL_SHADER_STORAGE_BUFFER, TypeSize(GL_FLOAT) * m_ResLargeur * m_ResHauteur * 3 , NULL, GL_DYNAMIC_COPY);
-		//// Now bind the buffer to the zeroth GL_SHADER_STORAGE_BUFFER
-		//// binding point
-		//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssboBuf);
-		//glUniform1fv(infoPixelIndex, m_ResLargeur * m_ResHauteur * 3, )
-
-		//// Créer une texture openGL
-		//glGenTextures(1, &m_TextureScene);
-		//glBindTexture(GL_TEXTURE_2D, m_TextureScene);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, m_InfoPixel);
-
 
 		size_t nbSurfaces = m_Surfaces.size();
 		size_t nbQuadrics = m_quadricsIndexes.size();
@@ -903,7 +830,6 @@ void CScene::LancerRayons(void)
 		cout << "nbTriangles = " << nbTriangles << endl;
 		cout << "nbPlanes = " << nbPlanes << endl;
 		cout << "nbLights = " << nbLights << endl;
-
 		//
 
 
@@ -941,7 +867,6 @@ void CScene::LancerRayons(void)
 			"m_IndiceDeRefraction"
 		};
 
-
 		const char* quadricNames[QUADRICTYPE_SIZE] = {
 			"m_surface",
 			"m_quadrique",
@@ -960,7 +885,6 @@ void CScene::LancerRayons(void)
 			"m_normal",
 			"m_cst"
 		};
-
 
 		const char* lightNames[LIGHTTYPE_SIZE] = {
 			"m_PositionLight",
@@ -1002,7 +926,6 @@ void CScene::LancerRayons(void)
 		}
 
 		//Fill char* array with all uniform name possible for each surface type
-		
 		//for quadrics
 		for (size_t i = 0; i < nbQuadrics; i++)
 		{
@@ -1015,7 +938,6 @@ void CScene::LancerRayons(void)
 				strcat(quadricCompleteNames[offset + j], s.c_str());
 				strcat(quadricCompleteNames[offset + j], "].m_surface.");
 				strcat(quadricCompleteNames[offset + j], surfaceNames[j]);
-
 			}
 			
 			offset += SURFACETYPE_SIZE;
@@ -1042,7 +964,6 @@ void CScene::LancerRayons(void)
 				strcat(triangleCompleteNames[offset + j], s.c_str());
 				strcat(triangleCompleteNames[offset + j], "].m_surface.");
 				strcat(triangleCompleteNames[offset + j], surfaceNames[j]);
-
 			}
 
 			offset += SURFACETYPE_SIZE;
@@ -1077,7 +998,6 @@ void CScene::LancerRayons(void)
 				strcat(planeCompleteNames[offset + j], s.c_str());
 				strcat(planeCompleteNames[offset + j], "].m_surface.");
 				strcat(planeCompleteNames[offset + j], surfaceNames[j]);
-
 			}
 
 			offset += SURFACETYPE_SIZE;
@@ -1089,8 +1009,6 @@ void CScene::LancerRayons(void)
 				strcat(planeCompleteNames[offset + j], s.c_str());
 				strcat(planeCompleteNames[offset + j], "].");
 				strcat(planeCompleteNames[offset + j], planeNames[j+1]);
-				//cout << "planes : " << offset + j << " | " << planeCompleteNames[offset + j] << endl;
-
 			}
 		}
 
@@ -1106,7 +1024,6 @@ void CScene::LancerRayons(void)
 				strcat(lightCompleteNames[offset + j], s.c_str());
 				strcat(lightCompleteNames[offset + j], "].");
 				strcat(lightCompleteNames[offset + j], lightNames[j]);
-
 			}
 		}
 
@@ -1133,11 +1050,10 @@ void CScene::LancerRayons(void)
 			cout << lightCompleteNames[i] << endl;
 		}
 		cout << endl;
-
 		//****************************************************************************
 
-		//Based on the surface type and previous generated names for uniforms, get uniform index and update its value
 
+		//Based on the surface type and previous generated names for uniforms, get uniform index and update its value
 		GLint** size = new GLint*[SCENEDATATYPE_SIZE];
 		GLint** offset = new GLint*[SCENEDATATYPE_SIZE];
 		GLint** type = new GLint*[SCENEDATATYPE_SIZE];
@@ -1197,22 +1113,8 @@ void CScene::LancerRayons(void)
 			delete[] indices;
 		}
 
-		err = glGetError();
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
+		printOpenGLError();
 
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened before SceneData memcpy" << endl;//Process/log the error.
-		}
 		///Fill data for all surfaces per type
 		//fill data for quadrics
 		for (size_t i = 0; i < nbQuadrics; i++)
@@ -1229,8 +1131,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			fillSurfaceStruct(SceneDataBuffer, offset[QUADRIC], size[QUADRIC], type[QUADRIC], curQuadric, curIndex);
-			
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_quadrique (CVecteur3)
@@ -1269,7 +1169,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			fillSurfaceStruct(SceneDataBuffer, offset[TRIANGLE], size[TRIANGLE], type[TRIANGLE], curTriangle, curIndex);
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_points[3] (3 * CVecteur3)
@@ -1288,8 +1187,6 @@ void CScene::LancerRayons(void)
 			memcpy(SceneDataBuffer + offset[TRIANGLE][curIndex + 3], vecValues2, size[TRIANGLE][curIndex + 3] * TypeSize(type[TRIANGLE][curIndex + 3]));
 		}
 
-
-		//TODO : Add for planes
 		for (size_t i = 0; i < nbPlanes; i++)
 		{
 			CPlan* curPlane = dynamic_cast<CPlan*>(m_Surfaces[m_planesIndexes[i]]);
@@ -1304,7 +1201,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			fillSurfaceStruct(SceneDataBuffer, offset[PLANE], size[PLANE], type[PLANE], curPlane, curIndex);
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_normale (CVecteur3)
@@ -1361,46 +1257,23 @@ void CScene::LancerRayons(void)
 		dValue = nbLights;
 		memcpy(SceneDataBuffer + offset[7][0], &dValue, size[7][0] * TypeSize(type[7][0]));
 
-		err = glGetError();
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
-
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened in CSceneData memcpy" << endl;//Process/log the error.
-		}
+		//DEBUG
+		printOpenGLError();
+		//
 
 		//Create SceneDataBuffer
 		GLuint SceneDataUBO;
 		glGenBuffers(1, &SceneDataUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, SceneDataUBO);
 		glBufferData(GL_UNIFORM_BUFFER, uniformSize, SceneDataBuffer, GL_STATIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, uniformIndex, SceneDataUBO);
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENEDATA_BINDING_INDEX, SceneDataUBO);
+		//test
+		//glUniformBlockBinding(prog, SceneDataUniformIndex, SCENEDATA_BINDING_INDEX);
 
-		err = glGetError();
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
+		//DEBUG
+		printOpenGLError();
+		//
 
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened after CSceneData buffer creation" << endl;//Process/log the error.
-		}
 		//Clean memory
 		for (size_t i = 0; i < nbQuadrics; i++)
 		{
@@ -1433,32 +1306,18 @@ void CScene::LancerRayons(void)
 		//Activate compute shader
 		CVar::g_ComputeShader->activer();
 		glDispatchCompute(m_ResLargeur / 16, m_ResHauteur/ 16, 1);
-		
-		
-		//glDispatchCompute(CVar::g_LargeurViewport, CVar::g_HauteurViewport, 1);
+
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-		///DEBUG
-		//display uniforms variables results
-		err = glGetError();
+		//DEBUG
+		printOpenGLError();
+		//
 
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
 
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened after CSceneData" << endl;//Process/log the error.
-		}
-
+		/**************************************************************************************/
+		//DEBUG
+		///Verify data copied in data buffers from them (verify if right size, offset and type)
 		glBindBuffer(GL_UNIFORM_BUFFER, generalUbo);
 
 		cout << "BEFORE get : ";
@@ -1487,7 +1346,11 @@ void CScene::LancerRayons(void)
 
 		cout << "AFTER get : ";
 		cout << "\t cameraPosition = " << camPosition_OUT[0] << " | " << camPosition_OUT[1] << " | " << camPosition_OUT[2] << " | " << camPosition_OUT[3] << std::endl;
-		cout << "\t camOrientation = " << camOrientation_OUT[0][0] << " | " << camOrientation_OUT[0][1] << " | " << camOrientation_OUT[0][2] << " | " << camOrientation_OUT[0][3] << std::endl;
+		cout << "\t camOrientation = " 
+			<< endl << "\t\t" << camOrientation_OUT[0][0] << " | " << camOrientation_OUT[0][1] << " | " << camOrientation_OUT[0][2] << " | " << camOrientation_OUT[0][3] 
+			<< endl << "\t\t" << camOrientation_OUT[1][0] << " | " << camOrientation_OUT[1][1] << " | " << camOrientation_OUT[1][2] << " | " << camOrientation_OUT[1][3] 
+			<< endl << "\t\t" << camOrientation_OUT[2][0] << " | " << camOrientation_OUT[2][1] << " | " << camOrientation_OUT[2][2] << " | " << camOrientation_OUT[2][3] 
+			<< endl << "\t\t" << camOrientation_OUT[3][0] << " | " << camOrientation_OUT[3][1] << " | " << camOrientation_OUT[3][2] << " | " << camOrientation_OUT[3][3] << std::endl;
 		cout << "\t halfWidth_OUT = " << halfWidth_OUT << std::endl;
 		cout << "\t halfHeight_OUT = " << halfHeight_OUT << std::endl;
 		cout << "\t invResWidth_OUT = " << invResWidth_OUT << std::endl;
@@ -1495,24 +1358,10 @@ void CScene::LancerRayons(void)
 		cout << "\t couleurArrierePlan_OUT = " << couleurArrierePlan_OUT[0] << " | " << couleurArrierePlan_OUT[1] << " | " << couleurArrierePlan_OUT[2] << " | " << couleurArrierePlan_OUT[3] << std::endl;
 
 		///
-		err = glGetError();
 
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
-
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened DEBUG test" << endl;//Process/log the error.
-		}
-
+		//DEBUG
+		printOpenGLError();
+		//
 
 		///DEBUG SceneData
 		glBindBuffer(GL_UNIFORM_BUFFER, SceneDataUBO);
@@ -1533,8 +1382,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			printSurfaceStruct(SceneDataBuffer, offset[QUADRIC], size[QUADRIC], type[QUADRIC], curQuadric, curIndex);
-
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_quadrique (CVecteur3)
@@ -1561,7 +1408,6 @@ void CScene::LancerRayons(void)
 
 		}
 
-
 		//fill data for triangles 
 		for (size_t i = 0; i < nbTriangles; i++)
 		{
@@ -1577,7 +1423,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			printSurfaceStruct(SceneDataBuffer, offset[TRIANGLE], size[TRIANGLE], type[TRIANGLE], curTriangle, curIndex);
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_points[3] (3 * CVecteur3)
@@ -1615,7 +1460,6 @@ void CScene::LancerRayons(void)
 
 			//For m_surface (struct)
 			printSurfaceStruct(SceneDataBuffer, offset[PLANE], size[PLANE], type[PLANE], curPlane, curIndex);
-
 			curIndex += SURFACETYPE_SIZE;
 
 			//For m_normale (CVecteur3)
@@ -1682,26 +1526,11 @@ void CScene::LancerRayons(void)
 		glGetBufferSubData(GL_UNIFORM_BUFFER, offset[7][0], size[7][0] * TypeSize(type[7][0]), &sizetValue);
 
 		cout << "\t nbLights = " << sizetValue << std::endl;
+		/**************************************************************************************/
 
-		///
-		err = glGetError();
-
-		while (err != GL_NO_ERROR)
-		{
-			string error;
-			switch (err) {
-			case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
-			case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
-			case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
-			case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
-			case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
-			}
-
-			cerr << "GL_" << error.c_str() << endl;
-			err = glGetError();
-			cout << "An error happened DEBUG test" << endl;//Process/log the error.
-		}
-
+		//DEBUG
+		printOpenGLError();
+		//
 	}
 	else
 	{
@@ -1730,20 +1559,6 @@ void CScene::LancerRayons(void)
 				m_InfoPixel[PixelIdx + 2] = PixelColor.b;
 			}
 		}
-	}
-	//Specify texture image from data in m_InfoPixel 
-	//TODO : Check this TEXTURE0 +1
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, m_TextureScene);
-
-	if (CVar::g_ComputerShadersON)
-	{
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, NULL);
-			
-			
-	}
-	else
-	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_ResLargeur, m_ResHauteur, 0, GL_RGB, GL_FLOAT, m_InfoPixel);
 	}
 }
@@ -1961,51 +1776,51 @@ const CCouleur CScene::ObtenirCouleurSurIntersection(const CRayon& Rayon, const 
 		}
 	}
 
-	// Effectuer les réflexions de rayon
-	REAL ReflectedRayonEnergy = Intersection.ObtenirSurface()->ObtenirCoeffReflexion() * Rayon.ObtenirEnergie();
-	if (ReflectedRayonEnergy > m_EnergieMinRayon && Rayon.ObtenirNbRebonds() < m_NbRebondsMax)
-	{
-		CRayon ReflectedRayon;
-		ReflectedRayon.AjusterDirection(CVecteur3::Reflect(Rayon.ObtenirDirection(), Intersection.ObtenirNormale()));
-		ReflectedRayon.AjusterOrigine(IntersectionPoint);
-		ReflectedRayon.AjusterEnergie(ReflectedRayonEnergy);
-		ReflectedRayon.AjusterNbRebonds(Rayon.ObtenirNbRebonds() + 1);
+	//// Effectuer les réflexions de rayon
+	//REAL ReflectedRayonEnergy = Intersection.ObtenirSurface()->ObtenirCoeffReflexion() * Rayon.ObtenirEnergie();
+	//if (ReflectedRayonEnergy > m_EnergieMinRayon && Rayon.ObtenirNbRebonds() < m_NbRebondsMax)
+	//{
+	//	CRayon ReflectedRayon;
+	//	ReflectedRayon.AjusterDirection(CVecteur3::Reflect(Rayon.ObtenirDirection(), Intersection.ObtenirNormale()));
+	//	ReflectedRayon.AjusterOrigine(IntersectionPoint);
+	//	ReflectedRayon.AjusterEnergie(ReflectedRayonEnergy);
+	//	ReflectedRayon.AjusterNbRebonds(Rayon.ObtenirNbRebonds() + 1);
 
-		Result += ObtenirCouleur(ReflectedRayon) * Intersection.ObtenirSurface()->ObtenirCoeffReflexion();
-	}
+	//	Result += ObtenirCouleur(ReflectedRayon) * Intersection.ObtenirSurface()->ObtenirCoeffReflexion();
+	//}
 
-	// Effectuer les réfractions de rayon
-	REAL RefractedRayonEnergy = Intersection.ObtenirSurface()->ObtenirCoeffRefraction() * Rayon.ObtenirEnergie();
-	if (RefractedRayonEnergy > m_EnergieMinRayon && Rayon.ObtenirNbRebonds() < m_NbRebondsMax)
-	{
-		REAL      IndiceRefractionRatio;
-		CRayon    RefractedRayon;
-		CVecteur3 SurfaceNormal = Intersection.ObtenirNormale();
+	//// Effectuer les réfractions de rayon
+	//REAL RefractedRayonEnergy = Intersection.ObtenirSurface()->ObtenirCoeffRefraction() * Rayon.ObtenirEnergie();
+	//if (RefractedRayonEnergy > m_EnergieMinRayon && Rayon.ObtenirNbRebonds() < m_NbRebondsMax)
+	//{
+	//	REAL      IndiceRefractionRatio;
+	//	CRayon    RefractedRayon;
+	//	CVecteur3 SurfaceNormal = Intersection.ObtenirNormale();
 
-		if (Rayon.ObtenirIndiceRefraction() == Intersection.ObtenirSurface()->ObtenirIndiceRefraction())
-		{
-			// de l'intérieur, vers l'extérieur...
-			RefractedRayon.AjusterIndiceRefraction(m_IndiceRefractionScene);
-			IndiceRefractionRatio = Intersection.ObtenirSurface()->ObtenirIndiceRefraction() / m_IndiceRefractionScene;
-			SurfaceNormal = -SurfaceNormal;
-		}
-		else
-		{
-			// de l'extérieur, vers l'intérieur...
-			RefractedRayon.AjusterIndiceRefraction(Intersection.ObtenirSurface()->ObtenirIndiceRefraction());
-			IndiceRefractionRatio = m_IndiceRefractionScene / Intersection.ObtenirSurface()->ObtenirIndiceRefraction();
-		}
+	//	if (Rayon.ObtenirIndiceRefraction() == Intersection.ObtenirSurface()->ObtenirIndiceRefraction())
+	//	{
+	//		// de l'intérieur, vers l'extérieur...
+	//		RefractedRayon.AjusterIndiceRefraction(m_IndiceRefractionScene);
+	//		IndiceRefractionRatio = Intersection.ObtenirSurface()->ObtenirIndiceRefraction() / m_IndiceRefractionScene;
+	//		SurfaceNormal = -SurfaceNormal;
+	//	}
+	//	else
+	//	{
+	//		// de l'extérieur, vers l'intérieur...
+	//		RefractedRayon.AjusterIndiceRefraction(Intersection.ObtenirSurface()->ObtenirIndiceRefraction());
+	//		IndiceRefractionRatio = m_IndiceRefractionScene / Intersection.ObtenirSurface()->ObtenirIndiceRefraction();
+	//	}
 
-		//TODO: la direction du vecteur avec refraction
-		RefractedRayon.AjusterOrigine(IntersectionPoint);
-		RefractedRayon.AjusterEnergie(RefractedRayonEnergy);
-		RefractedRayon.AjusterNbRebonds(Rayon.ObtenirNbRebonds() + 1);
+	//	//TODO: la direction du vecteur avec refraction
+	//	RefractedRayon.AjusterOrigine(IntersectionPoint);
+	//	RefractedRayon.AjusterEnergie(RefractedRayonEnergy);
+	//	RefractedRayon.AjusterNbRebonds(Rayon.ObtenirNbRebonds() + 1);
 
-		RefractedRayon.AjusterDirection(CVecteur3::Refract(Rayon.ObtenirDirection(), SurfaceNormal, IndiceRefractionRatio));
+	//	RefractedRayon.AjusterDirection(CVecteur3::Refract(Rayon.ObtenirDirection(), SurfaceNormal, IndiceRefractionRatio));
 
-		//A decommenter apres ajustement de la direction!!
-		Result += ObtenirCouleur(RefractedRayon) * Intersection.ObtenirSurface()->ObtenirCoeffRefraction();
-	}
+	//	//A decommenter apres ajustement de la direction!!
+	//	Result += ObtenirCouleur(RefractedRayon) * Intersection.ObtenirSurface()->ObtenirCoeffRefraction();
+	//}
 
 	return Result;
 }
@@ -2043,4 +1858,23 @@ const CCouleur CScene::ObtenirFiltreDeSurface(CRayon& LumiereRayon) const
 	}
 
 	return Filter;
+}
+
+void CScene::printOpenGLError()
+{
+	GLenum err = glGetError();
+	while (err != GL_NO_ERROR)
+	{
+		string error;
+		switch (err) {
+		case GL_INVALID_OPERATION:      error = "INVALID_OPERATION";      break;
+		case GL_INVALID_ENUM:           error = "INVALID_ENUM";           break;
+		case GL_INVALID_VALUE:          error = "INVALID_VALUE";          break;
+		case GL_OUT_OF_MEMORY:          error = "OUT_OF_MEMORY";          break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:  error = "INVALID_FRAMEBUFFER_OPERATION";  break;
+		}
+
+		cerr << "An openGL error happened : GL_" << error.c_str() << endl;
+		err = glGetError();
+	}
 }

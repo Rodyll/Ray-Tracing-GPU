@@ -1,0 +1,132 @@
+* --- fichier test pour Ray-Tracer ---
+
+* --- GENERAL ------------------------
+        * --- back-ground color: R G B ---
+        * --- pos camera ---
+        background: 0 0 150
+        origin: 150.0 40.0 75.0
+        eye: 50.0 0.0 -25.0
+        up:  0.0 1.0 0.0
+
+* --- lumiere ---
+Lumiere: light_1
+        position: 100.0 400.0 360.0
+        intens:   0.5
+	
+Lumiere: light_2
+        position: 30.0 0.0 20.0
+        intens:   0.6
+
+Lumiere: light_3
+        position: 100.0 400.0 -300.0
+        intens:   0.5
+
+* --- un plan au sol (y = -45) ---
+* --- Ax + By + Cz -D = 0 ---
+Plane: plane_1
+        v_linear: 0.0 1.0 0.0 
+        v_const:  45.0
+        color:   10 255 11
+        ambient: 0.3
+        diffus:  0.7
+
+* --- un cube a gauche: cote = 2, pos = 0, 0, 0 ---
+Poly: face_front_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_front_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+
+Poly: face_top_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        rotate: 90 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_top_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        rotate: 90 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+	
+Poly: face_back_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        rotate: 180 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_back_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        rotate: 180 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+	
+Poly: face_bottom_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        rotate: -90 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_bottom_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        rotate: -90 0 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+	
+Poly: face_right_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        rotate: 0 90 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_right_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        rotate: 0 90 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+	
+Poly: face_left_a
+        point: 0 -1  1  1
+        point: 1 -1 -1  1
+        point: 2  1 -1  1
+        rotate: 0 -90 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25
+Poly: face_left_b
+        point: 2 -1  1  1
+        point: 1  1  1  1
+        point: 0  1 -1  1
+        rotate: 0 -90 0
+        color:  255 10 200
+	  scale: 30 20 10
+	  translate: 50 0 -25

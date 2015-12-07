@@ -157,14 +157,10 @@ void Initialiser( void )
 	// Définir la fonction du test de profondeur
 	glDepthFunc( GL_LEQUAL );
 	
-
-
+	//Creating a compute shader (if GPU mode selected)
 	if (CVar::g_ComputerShadersON)
 	{	
 		CVar::g_ComputeShader = new CNuanceurCalculProg(CVar::g_ComputeShaderPath, true);
-
-
-		//
 	}
 
 	cout << "[ETAT]: Lancer de rayons..." << endl;

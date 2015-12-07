@@ -1,0 +1,62 @@
+* --- fichier test pour Ray-Tracer ---
+
+* --- GENERAL ------------------------
+	* --- back-ground color: R G B ---
+	background: 0 0 150
+	* --- pos camera ---
+	origin: 00.0 700.0 300.0
+
+* --- un plan blanc au sol (y = -90) ---
+* --- Ax + By + Cz -D = 0 ---
+Plane: plane_1
+        v_linear: 0.0 1.0 0.0 
+        v_const:  90.0
+        color:   255 255 255
+        ambient: 0.0
+        diffus:  1.0
+
+* --- sphere #1: rayon = 40, pos = 0, 0, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: sphere_2
+        v_quad:      1.0 1.0 1.0
+        v_linear:    0.0 0.0 0.0 
+        v_const:   -1600.0
+	color:  255 255 0
+	ambient:  0.2
+	diffus:   0.8
+	refract:  0.9 1.0
+
+* --- sphere #2: rayon = 40, pos = 50, 100, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: sphere_1
+	v_quad:      1.0 1.0 1.0
+	v_linear:  100.0 -200.0 0.0 
+	v_const:   10900.0
+	color:  255 0 255
+	ambient:  0.2
+	diffus:   0.8
+	refract:  0.9 1.0
+
+* --- sphere #3: rayon = 40, pos = 100, 200, 0 ---
+    * --- fact quad:   A x**2 + B y**2 + C z**2 ---
+    * --- fact lin:  + D x    + E y    + F z    ---
+    * --- fact cst:  + G = 0                    ---
+Quad: sphere_3
+	v_quad:      1.0 1.0 1.0
+	v_linear:  200.0 -400.0 0.0 
+	v_const:   48400.0
+	color:  0 255 255
+	ambient:  0.2
+	diffus:   0.8
+	refract:  0.9 1.0
+
+
+* --- lumiere blanche #1 (top) ---
+Lumiere: light_1
+	position:  -500.0 600.0 0.0
+	color:	  255 255 255
+	intens:   0.8
